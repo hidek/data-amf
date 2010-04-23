@@ -6,7 +6,6 @@ test_requires 'Test::More';
 test_requires 'YAML';
 
 requires 'perl' => '5.008001';
-requires 'Moose';
 requires 'Scalar::Util';
 requires 'DateTime';
 requires 'XML::LibXML';

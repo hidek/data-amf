@@ -1,42 +1,34 @@
 package Data::AMF::IO;
-use Moose;
+use strict;
+use warnings;
 
 require bytes;
 
+use base 'Class::Accessor::Fast';
+
 use constant ENDIAN => unpack('S', pack('C2', 0, 1)) == 1 ? 'BIG' : 'LITTLE';
 
-has data => (
-    is      => 'rw',
-    isa     => 'Str',
-    default => sub { '' },
-    lazy    => 1,
-);
+__PACKAGE__->mk_accessors(qw(data pos refs));
 
-has pos => (
-    is      => 'rw',
-    isa     => 'Int',
-    default => sub { 0 },
-    lazy    => 1,
-);
+sub new {
+    my ($class, %args) = @_;
 
-has refs => (
-    is      => 'rw',
-    isa     => 'ArrayRef',
-    default => sub { [] },
-    lazy    => 1,
-);
+    $args{data} ||= '';
+    $args{pos}  ||= 0;
+    $args{refs} ||= [];
 
-__PACKAGE__->meta->make_immutable;
+    $class->SUPER::new(\%args);
+}
 
 sub read {
     my ($self, $len) = @_;
 
-    if ($len + $self->pos > bytes::length($self->data) ) {
+    if ($len + $self->pos > bytes::length($self->data)) {
         return;
     }
 
     my $data = substr $self->data, $self->pos, $len;
-    $self->pos( $self->pos + $len );
+    $self->pos($self->pos + $len);
 
     $data;
 }
@@ -61,7 +53,7 @@ sub read_s16 {
     my $data = $self->read(2);
 
     return unpack('s>', $data) if $] >= 5.009002;
-    return unpack('s', $data)  if ENDIAN eq 'BIG';
+    return unpack('s', $data) if ENDIAN eq 'BIG';
     return unpack('s', swap($data));
 }
 
@@ -85,7 +77,7 @@ sub read_double {
     my $data = $self->read(8);
 
     return unpack('d>', $data) if $] >= 5.009002;
-    return unpack('d', $data)  if ENDIAN eq 'BIG';
+    return unpack('d', $data) if ENDIAN eq 'BIG';
     return unpack('d', swap($data));
 }
 
@@ -114,20 +106,20 @@ sub write {
 
 sub write_u8 {
     my ($self, $data) = @_;
-    $self->write( pack('C', $data) );
+    $self->write(pack('C', $data));
 }
 
 sub write_u16 {
     my ($self, $data) = @_;
-    $self->write( pack('n', $data) );
+    $self->write(pack('n', $data));
 }
 
 sub write_s16 {
     my ($self, $data) = @_;
 
-    return $self->write( pack('s>', $data) ) if $] >= 5.009002;
-    return $self->write( pack('s', $data) )  if ENDIAN eq 'BIG';
-    return $self->write( swap pack('s', $data) );
+    return $self->write(pack('s>', $data)) if $] >= 5.009002;
+    return $self->write(pack('s', $data)) if ENDIAN eq 'BIG';
+    return $self->write(swap pack('s', $data));
 }
 
 sub write_u24 {
@@ -141,15 +133,15 @@ sub write_u24 {
 
 sub write_u32 {
     my ($self, $data) = @_;
-    $self->write( pack('N', $data) );
+    $self->write(pack('N', $data));
 }
 
 sub write_double {
     my ($self, $data) = @_;
 
-    return $self->write( pack('d>', $data) ) if $] >= 5.009002;
-    return $self->write( pack('d', $data) )  if ENDIAN eq 'BIG';
-    return $self->write( swap pack('d', $data) );
+    return $self->write(pack('d>', $data)) if $] >= 5.009002;
+    return $self->write(pack('d', $data)) if ENDIAN eq 'BIG';
+    return $self->write(swap pack('d', $data));
 }
 
 sub write_utf8 {

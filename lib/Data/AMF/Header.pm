@@ -1,26 +1,11 @@
 package Data::AMF::Header;
-use Moose;
 
-has name => (
-    is       => 'rw',
-    isa      => 'Str',
-    required => 1,
-);
+use strict;
+use warnings;
 
-has must_understand => (
-    is       => 'rw',
-    isa      => 'Int',
-    required => 1,
-);
+use base 'Class::Accessor::Fast';
 
-has value => (
-    is => 'rw',
-);
-
-has version => (
-    is  => 'rw',
-    isa => 'Int',
-);
+__PACKAGE__->mk_accessors(qw/name must_understand value version/);
 
 =head1 NAME
 

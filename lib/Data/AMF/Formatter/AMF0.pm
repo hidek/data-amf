@@ -1,18 +1,24 @@
 package Data::AMF::Formatter::AMF0;
-use Moose;
+
+use strict;
+use warnings;
+
+use base 'Class::Accessor::Fast';
 
 require bytes;
-use Scalar::Util qw/looks_like_number/;
+use Scalar::Util qw/looks_like_number blessed/;
 use Data::AMF::IO;
+use Carp qw(confess);
 
-has 'io' => (
-    is      => 'rw',
-    isa     => 'Data::AMF::IO',
-    lazy    => 1,
-    default => sub {
-        Data::AMF::IO->new( data => q[] );
-    },
-);
+__PACKAGE__->mk_accessors('io');
+
+sub new {
+    my ($class, %args) = @_;
+
+    $args{io} ||= Data::AMF::IO->new(data => q[]);
+
+    $class->SUPER::new(\%args);
+}
 
 sub format {
     my ($self, @obj) = @_;
@@ -21,26 +27,20 @@ sub format {
     for my $obj (@obj) {
         if (my $pkg = blessed $obj) {
             $self->format_typed_object($obj);
-        }
-        elsif (my $ref = ref($obj)) {
+        } elsif (my $ref = ref($obj)) {
             if ($ref eq 'ARRAY') {
                 $self->format_strict_array($obj);
-            }
-            elsif ($ref eq 'HASH') {
+            } elsif ($ref eq 'HASH') {
                 $self->format_object($obj);
-            }
-            else {
+            } else {
                 confess qq[cannot format "$ref" object];
             }
-        }
-        else {
+        } else {
             if (looks_like_number($obj)) {
                 $self->format_number($obj);
-            }
-            elsif (defined($obj)) {
+            } elsif (defined($obj)) {
                 $self->format_string($obj);
-            }
-            else {
+            } else {
                 $self->format_null($obj);
             }
         }
@@ -63,11 +63,11 @@ sub format_string {
 
 sub format_strict_array {
     my ($self, $obj) = @_;
-    my @array = @{ $obj };
+    my @array = @{$obj};
 
     $self->io->write_u8(0x0a);
 
-    $self->io->write_u32( scalar @array );
+    $self->io->write_u32(scalar @array);
     for my $v (@array) {
         $self->format($v);
     }
@@ -86,13 +86,13 @@ sub format_object {
     }
 
     $self->io->write_u16(0x00);
-    $self->io->write_u8(0x09);      # object-end marker
+    $self->io->write_u8(0x09);    # object-end marker
 }
 
 sub format_null {
     my ($self, $obj) = @_;
 
-    $self->io->write_u8(0x05);  # null marker
+    $self->io->write_u8(0x05);    # null marker
 }
 
 sub format_typed_object {

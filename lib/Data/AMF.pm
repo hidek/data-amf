@@ -1,37 +1,26 @@
 package Data::AMF;
 use 5.008001;
-use Moose;
+use strict;
+use warnings;
 
 our $VERSION = '0.03';
+
+use base 'Class::Accessor::Fast';
 
 use Data::AMF::Parser;
 use Data::AMF::Formatter;
 
-has version => (
-    is      => 'rw',
-    isa     => 'Int',
-    default => sub { 0 },
-);
+__PACKAGE__->mk_accessors(qw(version parser formatter));
 
-has parser => (
-    is      => 'rw',
-    lazy    => 1,
-    default => sub {
-        my $self = shift;
-        Data::AMF::Parser->new( version => $self->version );
-    },
-);
+sub new {
+    my ($class, %args) = @_;
 
-has formatter => (
-    is      => 'rw',
-    lazy    => 1,
-    default => sub {
-        my $self = shift;
-        Data::AMF::Formatter->new( version => $self->version );
-    },
-);
+    $args{version}   ||= 0;
+    $args{parser}    ||= Data::AMF::Parser->new(version => $args{version});
+    $args{formatter} ||= Data::AMF::Formatter->new(version => $args{version});
 
-__PACKAGE__->meta->make_immutable;
+    $class->SUPER::new(\%args);
+}
 
 sub serialize {
     my $self = shift;

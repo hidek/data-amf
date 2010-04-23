@@ -1,30 +1,12 @@
 package Data::AMF::Message;
-use Moose;
 
-has target_uri => (
-    is       => 'rw',
-    isa      => 'Str',
-    required => 1,
-);
+use strict;
+use warnings;
 
-has response_uri => (
-    is       => 'rw',
-    isa      => 'Str',
-    required => 1,
-);
+use base 'Class::Accessor::Fast';
+use Scalar::Util qw/blessed/
 
-has value => (
-    is => 'rw',
-);
-
-has source => (
-    is => 'rw',
-);
-
-has version => (
-    is  => 'rw',
-    isa => 'Int',
-);
+__PACAKGE__->mk_accessors(qw(target_uri response_uri value source version))
 
 sub result {
     my ($self, $obj) = @_;
